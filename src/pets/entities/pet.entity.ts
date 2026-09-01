@@ -18,28 +18,23 @@ export class Pet {
  @PrimaryGeneratedColumn()
  id: number;
 
-// Pet's name.
- @Column({ type: 'varchar', length: 80 })
+ @Column({ type: 'varchar', length: 80 }) // Pet's name.
  name: string;
 
-// Pet's species: dog or cat.
- @Column({ type: 'enum', enum: PetSpecies })
+ @Column({ type: 'enum', enum: PetSpecies }) // Pet's species: dog or cat.
  species: PetSpecies;
 
-// Pet's breed. Can be empty.
- @Column({ type: 'varchar', length: 80, nullable: true })
+ @Column({ type: 'varchar', length: 80, nullable: true }) // Pet's breed. Can be empty.
  breed: string;
 
-// Pet's sex. Can be empty.
- @Column({ type: 'enum', enum: PetSex, nullable: true })
+
+ @Column({ type: 'enum', enum: PetSex, nullable: true }) // Pet's sex. Can be empty.
  sex: PetSex;
 
-// Pet's birth date. Can be empty.
- @Column({ name: 'birth_date', type: 'date', nullable: true })
+ @Column({ name: 'birth_date', type: 'date', nullable: true }) // Pet's birth date. Can be empty.
  birthDate: Date;
 
-// Pet is active by default.
- @Column({ type: 'boolean', default: true })
+ @Column({ type: 'boolean', default: true }) // Pet is active by default.
  active: boolean;
 
 
