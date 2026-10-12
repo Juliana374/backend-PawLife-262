@@ -1,34 +1,49 @@
-// Import TypeORM tools.
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
-
-// Import the Pet entity.
+import {
+	Check,
+	Column,
+	Entity,
+	Index,
+	JoinColumn,
+	ManyToOne,
+	PrimaryGeneratedColumn,
+} from 'typeorm';
 import { Pet } from '../../pets/entities/pet.entity';
+import { Appointment } from '../../appointments/entities/appointment.entity';
 
-// Import the User entity.
-import { User } from '../../users/entities/user.entity';
-
-// Create the "weight_records" table.
+@Index('idx_weight_records_pet_id', ['pet'])
+@Check('"weight_kg" > 0')
+@Check('"measurement_date" <= CURRENT_DATE')
 @Entity('weight_records')
 export class WeightRecord {
+	@PrimaryGeneratedColumn()
+	id: number;
 
-// Auto-generated primary key.
- @PrimaryGeneratedColumn()
- id: number;
+	@Column({
+		name: 'weight_kg',
+		type: 'numeric',
+		precision: 5,
+		scale: 2,
+		transformer: {
+			to: (value: number) => value,
+			from: (value: string | number) => Number(value),
+		},
+	})
+	weightKg: number;
 
- @Column({ name: 'weight_kg', type: 'decimal', precision: 5, scale: 2 }) // Pet's weight in kilograms.
- weightKg: number;
+	@Column({ name: 'measurement_date', type: 'date', default: () => 'CURRENT_DATE' })
+	measurementDate: string;
 
- @Column({ name: 'measurement_date', type: 'date' }) // Date when the weight was measured.
- measurementDate: Date;
+	@ManyToOne(() => Pet, { nullable: false, onDelete: 'RESTRICT' })
+	@JoinColumn({ name: 'pet_id' })
+	pet: Pet;
 
+	@Column({ name: 'pet_id' })
+	petId: number;
 
- // Connect the record with a pet.
- @ManyToOne(() => Pet, { nullable: false }) 
- @JoinColumn({ name: 'pet_id' })
- pet: Pet;
+	@ManyToOne(() => Appointment, { nullable: true, onDelete: 'SET NULL' })
+	@JoinColumn({ name: 'appointment_id' })
+	appointment: Appointment | null;
 
- // Connect the record with the vet.
- @ManyToOne(() => User, { nullable: false })
- @JoinColumn({ name: 'vet_id' })
- vet: User;
+	@Column({ name: 'appointment_id', nullable: true })
+	appointmentId: number | null;
 }
