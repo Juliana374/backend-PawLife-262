@@ -1,56 +1,81 @@
-// Import the tools needed to create the table and its relationships
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
+import {
+    Column,
+    Entity,
+    Index,
+    JoinColumn,
+    ManyToOne,
+    OneToMany,
+    PrimaryGeneratedColumn,
+} from 'typeorm';
 
-// Import the Pet and User entities
 import { Pet } from '../../pets/entities/pet.entity';
-import { User } from '../../users/entities/user.entity';
+import { Veterinarian } from '../../veterinarians/entities/veterinarian.entity';
+import { Vaccine } from '../../vaccines/entities/vaccine.entity';
+import { Medication } from '../../medications/entities/medication.entity';
+import { WeightRecord } from '../../weight-records/entities/weight-record.entity';
 
-// Possible statuses for an appointment
 export enum AppointmentStatus {
     SCHEDULED = 'scheduled',
+    CONFIRMED = 'confirmed',
     COMPLETED = 'completed',
     CANCELLED = 'cancelled',
 }
 
-// This class represents the "appointments" table in the database
+@Index('idx_appointments_pet_id', ['pet'])
+@Index('idx_appointments_vet_id', ['vet'])
+@Index('idx_appointments_date', ['appointmentDate'])
 @Entity('appointments')
 export class Appointment {
 
-    // Unique ID for each appointment
     @PrimaryGeneratedColumn()
     id: number;
 
-    // Date and time of the appointment
-    @Column({ name: 'appointment_date', type: 'timestamp' })
+    @Column({ name: 'appointment_date', type: 'timestamptz' })
     appointmentDate: Date;
 
-    // Reason for the appointment
     @Column({ type: 'varchar', length: 150 })
     reason: string;
 
-    // Current status of the appointment
     @Column({
         type: 'enum',
         enum: AppointmentStatus,
+        enumName: 'appointments_status_enum',
         default: AppointmentStatus.SCHEDULED
     })
     status: AppointmentStatus;
 
-    // Notes that the veterinarian can add after the appointment
     @Column({ type: 'text', nullable: true })
-    notes: string;
+    diagnosis: string | null;
 
-    // Instructions given to the pet owner
     @Column({ type: 'text', nullable: true })
-    instructions: string;
+    instructions: string | null;
 
-    // Connects the appointment with the pet being treated
-    @ManyToOne(() => Pet, { nullable: false })
+    @ManyToOne(() => Pet, { nullable: false, onDelete: 'RESTRICT' })
     @JoinColumn({ name: 'pet_id' })
     pet: Pet;
 
-    // Connects the appointment with the veterinarian in charge
-    @ManyToOne(() => User, { nullable: false })
+    @Column({ name: 'pet_id', type: 'integer' })
+    petId: number;
+
+    @ManyToOne(() => Veterinarian, { nullable: false, onDelete: 'RESTRICT' })
     @JoinColumn({ name: 'vet_id' })
-    vet: User;
+    vet: Veterinarian;
+
+    @Column({ name: 'vet_id', type: 'integer' })
+    vetId: number;
+
+    @OneToMany(() => Vaccine, (vaccine) => vaccine.appointment)
+    vaccines: Vaccine[];
+
+    @OneToMany(() => Medication, (medication) => medication.appointment)
+    medications: Medication[];
+
+    @OneToMany(() => WeightRecord, (weightRecord) => weightRecord.appointment)
+    weightRecords: WeightRecord[];
+
+    @Column({ name: 'created_at', type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
+    createdAt: Date;
+
+    @Column({ name: 'updated_at', type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
+    updatedAt: Date;
 }

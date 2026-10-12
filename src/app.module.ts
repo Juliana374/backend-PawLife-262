@@ -1,11 +1,34 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { AuthModule } from './auth/auth.module';
+import { UsersModule } from './users/users.module';
+import { PetsModule } from './pets/pets.module';
+import { VeterinariansModule } from './veterinarians/veterinarians.module';
+import { AppointmentsModule } from './appointments/appointments.module';
+import { VaccinesModule } from './vaccines/vaccines.module';
+import { MedicationsModule } from './medications/medications.module';
+import { WeightRecordsModule } from './weight-records/weight-records.module';
+import { RemindersModule } from './reminders/reminders.module';
 
 @Module({
   imports: [
+    AuthModule,
+    UsersModule,
+    PetsModule,
+    VeterinariansModule,
+    AppointmentsModule,
+    VaccinesModule,
+    MedicationsModule,
+    WeightRecordsModule,
+    RemindersModule,
     ConfigModule.forRoot({
       isGlobal: true,
+      envFilePath:
+        process.env.NODE_ENV === 'production'
+          ? ['.env.production', '.env']
+          : ['.env.local', '.env'],
+    
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
@@ -13,12 +36,13 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
       useFactory: (configService: ConfigService) => ({
         type: 'postgres',
         host: configService.get<string>('DB_HOST'),
-        port: configService.get<number>('DB_PORT'),
+        port: Number(configService.get<string>('DB_PORT', '5432')),
         username: configService.get<string>('DB_USERNAME'),
         password: configService.get<string>('DB_PASSWORD'),
         database: configService.get<string>('DB_DATABASE'),
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
-        synchronize: true,
+        ssl: configService.get<string>('DB_SSL', 'false') === 'true',
+        synchronize: false,
       }),
     }),
   ],

@@ -1,13 +1,24 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
+import {
+  Check,
+  Column,
+  CreateDateColumn,
+  Entity,
+  Index,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { Pet } from '../../pets/entities/pet.entity';
-import { User } from '../../users/entities/user.entity';
+import { Appointment } from '../../appointments/entities/appointment.entity';
 
 export enum MedicationStatus {
   ACTIVE = 'active',
   COMPLETED = 'completed',
-  SUSPENDED = 'suspended',
+  DISCONTINUED = 'discontinued',
 }
 
+@Index('idx_medications_pet_id', ['pet'])
+@Check('"end_date" IS NULL OR "end_date" >= "start_date"')
 @Entity('medications')
 export class Medication {
   @PrimaryGeneratedColumn()
@@ -22,20 +33,34 @@ export class Medication {
   @Column({ type: 'varchar', length: 50 })
   schedule: string;
 
-  @Column({ name: 'start_date', type: 'date' })
-  startDate: Date;
+  @Column({ name: 'start_date', type: 'date', default: () => 'CURRENT_DATE' })
+  startDate: string;
 
   @Column({ name: 'end_date', type: 'date', nullable: true })
-  endDate: Date;
+  endDate: string | null;
 
-  @Column({ type: 'enum', enum: MedicationStatus, default: MedicationStatus.ACTIVE })
+  @Column({
+    type: 'enum',
+    enum: MedicationStatus,
+    enumName: 'medications_status_enum',
+    default: MedicationStatus.ACTIVE,
+  })
   status: MedicationStatus;
 
-  @ManyToOne(() => Pet, { nullable: false })
+  @ManyToOne(() => Pet, { nullable: false, onDelete: 'RESTRICT' })
   @JoinColumn({ name: 'pet_id' })
   pet: Pet;
 
-  @ManyToOne(() => User, { nullable: false })
-  @JoinColumn({ name: 'vet_id' })
-  vet: User;
+  @Column({ name: 'pet_id' })
+  petId: number;
+
+  @ManyToOne(() => Appointment, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'appointment_id' })
+  appointment: Appointment | null;
+
+  @Column({ name: 'appointment_id', nullable: true })
+  appointmentId: number | null;
+
+  @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
+  createdAt: Date;
 }
