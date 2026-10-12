@@ -28,6 +28,7 @@ import { RequirePermissions } from '../auth/decorators/require-permissions.decor
 import { AppPermission } from '../auth/enums/app-permission.enum';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { PermissionsGuard } from '../auth/guards/permissions.guard';
+import { withoutAppointmentVetPassword } from '../common/sanitize-user';
 import { CreateMedicationDto } from './dto/create-medication.dto';
 import { UpdateMedicationDto } from './dto/update-medication.dto';
 import { FindMedicationsQueryDto } from './dto/find-medications-query.dto';
@@ -109,6 +110,11 @@ export class MedicationsController {
   }
 
   private success(data: Medication | Medication[] | null) {
-    return { status: 'ok', data };
+    const safeData = Array.isArray(data)
+      ? data.map((medication) => withoutAppointmentVetPassword(medication))
+      : data
+        ? withoutAppointmentVetPassword(data)
+        : null;
+    return { status: 'ok', data: safeData };
   }
 }

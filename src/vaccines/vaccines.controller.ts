@@ -28,6 +28,7 @@ import { RequirePermissions } from '../auth/decorators/require-permissions.decor
 import { AppPermission } from '../auth/enums/app-permission.enum';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { PermissionsGuard } from '../auth/guards/permissions.guard';
+import { withoutAppointmentVetPassword } from '../common/sanitize-user';
 import { CreateVaccineDto } from './dto/create-vaccine.dto';
 import { UpdateVaccineDto } from './dto/update-vaccine.dto';
 import { FindVaccinesQueryDto } from './dto/find-vaccines-query.dto';
@@ -109,6 +110,11 @@ export class VaccinesController {
   }
 
   private success(data: Vaccine | Vaccine[] | null) {
-    return { status: 'ok', data };
+    const safeData = Array.isArray(data)
+      ? data.map((vaccine) => withoutAppointmentVetPassword(vaccine))
+      : data
+        ? withoutAppointmentVetPassword(data)
+        : null;
+    return { status: 'ok', data: safeData };
   }
 }

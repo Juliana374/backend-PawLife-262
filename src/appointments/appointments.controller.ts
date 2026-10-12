@@ -28,6 +28,7 @@ import { RequirePermissions } from '../auth/decorators/require-permissions.decor
 import { AppPermission } from '../auth/enums/app-permission.enum';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { PermissionsGuard } from '../auth/guards/permissions.guard';
+import { withoutVetPassword } from '../common/sanitize-user';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto';
 import { FindAppointmentsQueryDto } from './dto/find-appointments-query.dto';
@@ -97,17 +98,11 @@ export class AppointmentsController {
 
   private success(data: Appointment | Appointment[] | null) {
     const safeData = Array.isArray(data)
-      ? data.map((appointment) => this.withoutVetPassword(appointment))
+      ? data.map((appointment) => withoutVetPassword(appointment))
       : data
-        ? this.withoutVetPassword(data)
+        ? withoutVetPassword(data)
         : null;
     return { status: 'ok', data: safeData };
   }
 
-  private withoutVetPassword(appointment: Appointment) {
-    const user = appointment.vet?.user;
-    if (!user) return appointment;
-    const { password: _password, ...safeUser } = user;
-    return { ...appointment, vet: { ...appointment.vet, user: safeUser } };
-  }
 }

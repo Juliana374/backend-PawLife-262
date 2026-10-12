@@ -24,6 +24,7 @@ import { RequirePermissions } from '../auth/decorators/require-permissions.decor
 import { AppPermission } from '../auth/enums/app-permission.enum';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { PermissionsGuard } from '../auth/guards/permissions.guard';
+import { withoutAppointmentVetPassword } from '../common/sanitize-user';
 import { CreateWeightRecordDto } from './dto/create-weight-record.dto';
 import { FindWeightRecordsQueryDto } from './dto/find-weight-records-query.dto';
 import { WeightRecord } from './entities/weight-record.entity';
@@ -80,6 +81,11 @@ export class WeightRecordsController {
   }
 
   private success(data: WeightRecord | WeightRecord[]) {
-    return { status: 'ok', data };
+    const safeData = Array.isArray(data)
+      ? data.map((record) => withoutAppointmentVetPassword(record))
+      : data
+        ? withoutAppointmentVetPassword(data)
+        : null;
+    return { status: 'ok', data: safeData };
   }
 }

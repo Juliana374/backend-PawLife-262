@@ -36,8 +36,8 @@ export class RemindersService {
     if (filters.completed !== undefined) where.completed = filters.completed;
     if (filters.type) where.type = filters.type;
     const dateFilter = dateRange(
-      filters.from && new Date(filters.from),
-      filters.to && new Date(filters.to),
+      filters.from ? new Date(filters.from) : undefined,
+      filters.to ? new Date(filters.to) : undefined,
     );
     if (dateFilter) where.remindAt = dateFilter;
     return this.dataSource.getRepository(Reminder).find({

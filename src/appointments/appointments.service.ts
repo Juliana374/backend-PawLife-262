@@ -35,8 +35,8 @@ export class AppointmentsService {
     if (filters.vetId !== undefined) where.vetId = filters.vetId;
     if (filters.status) where.status = filters.status;
     const dateFilter = dateRange(
-      filters.from && new Date(filters.from),
-      filters.to && new Date(filters.to),
+      filters.from ? new Date(filters.from) : undefined,
+      filters.to ? new Date(filters.to) : undefined,
     );
     if (dateFilter) where.appointmentDate = dateFilter;
     return this.dataSource.getRepository(Appointment).find({
