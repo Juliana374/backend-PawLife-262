@@ -1,19 +1,25 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  Index,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { Pet } from '../../pets/entities/pet.entity';
 import { User } from '../../users/entities/user.entity';
 
-/** Where the reminder comes from, so the app can group and filter them. */
 export enum ReminderType {
   VACCINE = 'vaccine',
   MEDICATION = 'medication',
-  APPOINTMENT = 'appointment',
+  CHECKUP = 'checkup',
+  DEWORMING = 'deworming',
   OTHER = 'other',
 }
 
-/**
- * A care activity scheduled by the veterinarian for a pet.
- * The owner reads it, marks it as done, and gets notified when it is due.
- */
+@Index('idx_reminders_pet_id', ['pet'])
+@Index('idx_reminders_remind_at', ['remindAt'], { where: '"completed" = false' })
 @Entity('reminders')
 export class Reminder {
   @PrimaryGeneratedColumn()
@@ -23,28 +29,39 @@ export class Reminder {
   title: string;
 
   @Column({ type: 'text', nullable: true })
-  description: string;
+  description: string | null;
 
-  /** When the owner should be notified. */
-  @Column({ name: 'remind_at', type: 'timestamp' })
+  @Column({ name: 'remind_at', type: 'timestamptz' })
   remindAt: Date;
 
-  @Column({ type: 'enum', enum: ReminderType, default: ReminderType.OTHER })
+  @Column({
+    type: 'enum',
+    enum: ReminderType,
+    enumName: 'reminders_type_enum',
+    default: ReminderType.OTHER,
+  })
   type: ReminderType;
 
-  /** Lets the owner tick it off without deleting it. */
   @Column({ type: 'boolean', default: false })
   completed: boolean;
 
-  /** Prevents sending the same notification twice. */
   @Column({ type: 'boolean', default: false })
   notified: boolean;
 
-  @ManyToOne(() => Pet, { nullable: false })
+  @ManyToOne(() => Pet, { nullable: false, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'pet_id' })
   pet: Pet;
 
-  @ManyToOne(() => User, { nullable: false })
-  @JoinColumn({ name: 'vet_id' })
-  vet: User;
+  @Column({ name: 'pet_id', type: 'integer' })
+  petId: number;
+
+  @ManyToOne(() => User, { nullable: false, onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'created_by_user_id' })
+  createdByUser: User;
+
+  @Column({ name: 'created_by_user_id', type: 'integer' })
+  createdByUserId: number;
+
+  @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
+  createdAt: Date;
 }
