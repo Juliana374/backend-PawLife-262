@@ -1,0 +1,315 @@
+{
+  "info": {
+    "_postman_id": "557e79b8-8ef0-4cc2-8c4c-8e093202a78d",
+    "name": "Pawlife API",
+    "description": "Endpoints de autenticación, usuarios, mascotas, veterinarios, citas, vacunas, medicamentos, pesos, recordatorios y archivos estáticos. Importa Pawlife Local para desarrollo o Pawlife Production para el dominio desplegado. El esquema y los permisos de base de datos son administrados en la nube.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000" },
+    { "key": "token", "value": "" },
+    { "key": "loginEmail", "value": "" },
+    { "key": "loginPassword", "value": "" },
+    { "key": "userId", "value": "1" },
+    { "key": "roleId", "value": "1" },
+    { "key": "ownerId", "value": "1" },
+    { "key": "veterinarianUserId", "value": "1" },
+    { "key": "petId", "value": "1" },
+    { "key": "appointmentId", "value": "1" },
+    { "key": "vaccineId", "value": "1" },
+    { "key": "medicationId", "value": "1" },
+    { "key": "weightRecordId", "value": "1" },
+    { "key": "reminderId", "value": "1" },
+    { "key": "filename", "value": "example.jpg" }
+  ],
+  "item": [
+    {
+      "name": "Autenticación",
+      "item": [
+        {
+          "name": "Iniciar sesión",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', function () { pm.response.to.have.status(200); });",
+                  "const response = pm.response.json();",
+                  "if (response.data && response.data.access_token) {",
+                  "  pm.environment.set('token', response.data.access_token);",
+                  "  pm.collectionVariables.set('token', response.data.access_token);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{loginEmail}}\",\n  \"password\": \"{{loginPassword}}\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] },
+            "description": "Configura loginEmail y loginPassword con credenciales válidas. Inicia sesión y guarda data.access_token en token."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Usuarios",
+      "auth": {
+        "type": "bearer",
+        "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }]
+      },
+      "item": [
+        {
+          "name": "Crear usuario",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Carlos Diaz\",\n  \"email\": \"carlos@example.com\",\n  \"password\": \"Password123!\",\n  \"phone\": \"3001234567\",\n  \"roleId\": {{roleId}}\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseUrl}}/users", "host": ["{{baseUrl}}"], "path": ["users"] },
+            "description": "Requiere CREATE_USER."
+          },
+          "response": []
+        },
+        {
+          "name": "Listar usuarios",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/users?name=Ana&roleId={{roleId}}", "host": ["{{baseUrl}}"], "path": ["users"], "query": [{ "key": "name", "value": "Ana" }, { "key": "roleId", "value": "{{roleId}}" }] },
+            "description": "Requiere READ_USER. Filtros opcionales: name, email, roleId."
+          },
+          "response": []
+        },
+        {
+          "name": "Obtener usuario",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/users/{{userId}}", "host": ["{{baseUrl}}"], "path": ["users", "{{userId}}"] },
+            "description": "Requiere READ_USER."
+          },
+          "response": []
+        },
+        {
+          "name": "Actualizar usuario",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"3007654321\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseUrl}}/users/{{userId}}", "host": ["{{baseUrl}}"], "path": ["users", "{{userId}}"] },
+            "description": "Requiere UPDATE_USER. Envía solo los campos que deseas cambiar."
+          },
+          "response": []
+        },
+        {
+          "name": "Eliminar usuario",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{baseUrl}}/users/{{userId}}", "host": ["{{baseUrl}}"], "path": ["users", "{{userId}}"] },
+            "description": "Requiere DELETE_USER. Responde 200 con data: null."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Mascotas",
+      "auth": {
+        "type": "bearer",
+        "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }]
+      },
+      "item": [
+        {
+          "name": "Crear mascota",
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "name", "value": "Luna", "type": "text" },
+                { "key": "species", "value": "cat", "type": "text" },
+                { "key": "breed", "value": "Criollo", "type": "text" },
+                { "key": "sex", "value": "female", "type": "text" },
+                { "key": "birthDate", "value": "2022-05-14", "type": "text" },
+                { "key": "active", "value": "true", "type": "text" },
+                { "key": "ownerId", "value": "{{ownerId}}", "type": "text" },
+                { "key": "photos", "type": "file", "src": "" }
+              ]
+            },
+            "url": { "raw": "{{baseUrl}}/pets", "host": ["{{baseUrl}}"], "path": ["pets"] },
+            "description": "Requiere CREATE_PET. Usa multipart/form-data. Para subir varias imágenes, agrega varias filas con la misma key photos. Máximo 10 archivos de 5 MB; JPEG, PNG, WebP o GIF."
+          },
+          "response": []
+        },
+        {
+          "name": "Listar mascotas",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/pets?ownerId={{ownerId}}&species=cat&active=true", "host": ["{{baseUrl}}"], "path": ["pets"], "query": [{ "key": "ownerId", "value": "{{ownerId}}" }, { "key": "species", "value": "cat" }, { "key": "active", "value": "true" }] },
+            "description": "Requiere READ_PET. Filtros opcionales: name, species, sex, ownerId, active. Incluye URLs públicas en data[].photos[].url."
+          },
+          "response": []
+        },
+        {
+          "name": "Obtener mascota",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/pets/{{petId}}", "host": ["{{baseUrl}}"], "path": ["pets", "{{petId}}"] },
+            "description": "Requiere READ_PET."
+          },
+          "response": []
+        },
+        {
+          "name": "Actualizar mascota y agregar fotos",
+          "request": {
+            "method": "PATCH",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "name", "value": "Luna actualizada", "type": "text" },
+                { "key": "active", "value": "true", "type": "text" },
+                { "key": "photos", "type": "file", "src": "" }
+              ]
+            },
+            "url": { "raw": "{{baseUrl}}/pets/{{petId}}", "host": ["{{baseUrl}}"], "path": ["pets", "{{petId}}"] },
+            "description": "Requiere UPDATE_PET. Los campos son opcionales; las fotos nuevas se agregan a las existentes. Para varias, repite la key photos."
+          },
+          "response": []
+        },
+        {
+          "name": "Eliminar mascota",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{baseUrl}}/pets/{{petId}}", "host": ["{{baseUrl}}"], "path": ["pets", "{{petId}}"] },
+            "description": "Requiere DELETE_PET. Responde 200 con data: null."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Veterinarios",
+      "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+      "item": [
+        {
+          "name": "Crear perfil veterinario",
+          "request": {
+            "method": "POST",
+            "body": { "mode": "raw", "raw": "{\n  \"userId\": {{veterinarianUserId}},\n  \"licenseNumber\": \"VET-12345\",\n  \"specialty\": \"Medicina general\"\n}", "options": { "raw": { "language": "json" } } },
+            "url": { "raw": "{{baseUrl}}/veterinarians", "host": ["{{baseUrl}}"], "path": ["veterinarians"] },
+            "description": "Requiere CREATE_VETERINARIAN."
+          }, "response": []
+        },
+        {
+          "name": "Listar veterinarios",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/veterinarians?specialty=general&name=Ana", "host": ["{{baseUrl}}"], "path": ["veterinarians"], "query": [{ "key": "specialty", "value": "general" }, { "key": "name", "value": "Ana" }] }, "description": "Requiere READ_VETERINARIAN. Filtros opcionales: specialty, name." }, "response": []
+        },
+        {
+          "name": "Obtener veterinario",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/veterinarians/{{veterinarianUserId}}", "host": ["{{baseUrl}}"], "path": ["veterinarians", "{{veterinarianUserId}}"] }, "description": "Requiere READ_VETERINARIAN." }, "response": []
+        },
+        {
+          "name": "Actualizar veterinario",
+          "request": { "method": "PATCH", "body": { "mode": "raw", "raw": "{\n  \"specialty\": \"Cirugía\"\n}", "options": { "raw": { "language": "json" } } }, "url": { "raw": "{{baseUrl}}/veterinarians/{{veterinarianUserId}}", "host": ["{{baseUrl}}"], "path": ["veterinarians", "{{veterinarianUserId}}"] }, "description": "Requiere UPDATE_VETERINARIAN." }, "response": []
+        }
+      ]
+    },
+    {
+      "name": "Citas",
+      "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+      "item": [
+        {
+          "name": "Crear cita",
+          "request": { "method": "POST", "body": { "mode": "raw", "raw": "{\n  \"petId\": {{petId}},\n  \"vetId\": {{veterinarianUserId}},\n  \"appointmentDate\": \"2026-11-01T15:00:00.000Z\",\n  \"reason\": \"Consulta general\",\n  \"status\": \"scheduled\"\n}", "options": { "raw": { "language": "json" } } }, "url": { "raw": "{{baseUrl}}/appointments", "host": ["{{baseUrl}}"], "path": ["appointments"] }, "description": "Requiere CREATE_APPOINTMENT. vetId es el user_id del perfil veterinario." }, "response": []
+        },
+        { "name": "Listar citas", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/appointments?petId={{petId}}&vetId={{veterinarianUserId}}&status=scheduled", "host": ["{{baseUrl}}"], "path": ["appointments"], "query": [{ "key": "petId", "value": "{{petId}}" }, { "key": "vetId", "value": "{{veterinarianUserId}}" }, { "key": "status", "value": "scheduled" }] }, "description": "Requiere READ_APPOINTMENT. Filtros opcionales: petId, vetId, status, from, to." }, "response": [] },
+        { "name": "Obtener cita", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/appointments/{{appointmentId}}", "host": ["{{baseUrl}}"], "path": ["appointments", "{{appointmentId}}"] }, "description": "Requiere READ_APPOINTMENT." }, "response": [] },
+        { "name": "Actualizar cita", "request": { "method": "PATCH", "body": { "mode": "raw", "raw": "{\n  \"status\": \"confirmed\"\n}", "options": { "raw": { "language": "json" } } }, "url": { "raw": "{{baseUrl}}/appointments/{{appointmentId}}", "host": ["{{baseUrl}}"], "path": ["appointments", "{{appointmentId}}"] }, "description": "Requiere UPDATE_APPOINTMENT." }, "response": [] },
+        { "name": "Eliminar cita", "request": { "method": "DELETE", "url": { "raw": "{{baseUrl}}/appointments/{{appointmentId}}", "host": ["{{baseUrl}}"], "path": ["appointments", "{{appointmentId}}"] }, "description": "Requiere DELETE_APPOINTMENT." }, "response": [] }
+      ]
+    },
+    {
+      "name": "Vacunas",
+      "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+      "item": [
+        { "name": "Registrar vacuna", "request": { "method": "POST", "body": { "mode": "raw", "raw": "{\n  \"name\": \"Rabia\",\n  \"petId\": {{petId}},\n  \"applicationDate\": \"2026-10-01\",\n  \"nextDoseDate\": \"2027-10-01\"\n}", "options": { "raw": { "language": "json" } } }, "url": { "raw": "{{baseUrl}}/vaccines", "host": ["{{baseUrl}}"], "path": ["vaccines"] }, "description": "Requiere CREATE_VACCINE. appointmentId es opcional." }, "response": [] },
+        { "name": "Listar vacunas con filtros", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/vaccines?petId={{petId}}&appointmentId={{appointmentId}}&from=2026-01-01&to=2026-12-31", "host": ["{{baseUrl}}"], "path": ["vaccines"], "query": [{ "key": "petId", "value": "{{petId}}" }, { "key": "appointmentId", "value": "{{appointmentId}}" }, { "key": "from", "value": "2026-01-01" }, { "key": "to", "value": "2026-12-31" }] }, "description": "Requiere READ_VACCINE. Filtros opcionales: petId, appointmentId, from, to." }, "response": [] },
+        { "name": "Listar vacunas de mascota (ruta corta)", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/vaccines/pet/{{petId}}", "host": ["{{baseUrl}}"], "path": ["vaccines", "pet", "{{petId}}"] }, "description": "Requiere READ_VACCINE." }, "response": [] },
+        { "name": "Obtener vacuna", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/vaccines/{{vaccineId}}", "host": ["{{baseUrl}}"], "path": ["vaccines", "{{vaccineId}}"] }, "description": "Requiere READ_VACCINE." }, "response": [] },
+        { "name": "Actualizar vacuna", "request": { "method": "PATCH", "body": { "mode": "raw", "raw": "{\n  \"nextDoseDate\": \"2027-11-01\"\n}", "options": { "raw": { "language": "json" } } }, "url": { "raw": "{{baseUrl}}/vaccines/{{vaccineId}}", "host": ["{{baseUrl}}"], "path": ["vaccines", "{{vaccineId}}"] }, "description": "Requiere UPDATE_VACCINE." }, "response": [] },
+        { "name": "Eliminar vacuna", "request": { "method": "DELETE", "url": { "raw": "{{baseUrl}}/vaccines/{{vaccineId}}", "host": ["{{baseUrl}}"], "path": ["vaccines", "{{vaccineId}}"] }, "description": "Requiere DELETE_VACCINE." }, "response": [] }
+      ]
+    },
+    {
+      "name": "Medicamentos generales",
+      "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+      "item": [
+        { "name": "Registrar medicamento general", "request": { "method": "POST", "body": { "mode": "raw", "raw": "{\n  \"name\": \"Amoxicilina\",\n  \"activeIngredient\": \"Amoxicilina\",\n  \"concentration\": \"250 mg\",\n  \"presentation\": \"Tabletas\",\n  \"description\": \"Antibiótico de uso veterinario\"\n}", "options": { "raw": { "language": "json" } } }, "url": { "raw": "{{baseUrl}}/medications", "host": ["{{baseUrl}}"], "path": ["medications"] }, "description": "Requiere CREATE_MEDICATION." }, "response": [] },
+        { "name": "Listar medicamentos generales", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/medications", "host": ["{{baseUrl}}"], "path": ["medications"] }, "description": "Requiere READ_MEDICATION." }, "response": [] },
+        { "name": "Obtener medicamento general", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/medications/{{medicationId}}", "host": ["{{baseUrl}}"], "path": ["medications", "{{medicationId}}"] }, "description": "Requiere READ_MEDICATION." }, "response": [] },
+        { "name": "Actualizar medicamento general", "request": { "method": "PATCH", "body": { "mode": "raw", "raw": "{\n  \"isActive\": false\n}", "options": { "raw": { "language": "json" } } }, "url": { "raw": "{{baseUrl}}/medications/{{medicationId}}", "host": ["{{baseUrl}}"], "path": ["medications", "{{medicationId}}"] }, "description": "Requiere UPDATE_MEDICATION." }, "response": [] },
+        { "name": "Eliminar medicamento general", "request": { "method": "DELETE", "url": { "raw": "{{baseUrl}}/medications/{{medicationId}}", "host": ["{{baseUrl}}"], "path": ["medications", "{{medicationId}}"] }, "description": "Requiere DELETE_MEDICATION." }, "response": [] }
+      ]
+    },
+    {
+      "name": "Tratamientos de mascotas",
+      "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+      "item": [
+        { "name": "Registrar tratamiento de mascota", "request": { "method": "POST", "body": { "mode": "raw", "raw": "{\n  \"medicationCatalogId\": {{medicationCatalogId}},\n  \"dose\": \"1 tableta\",\n  \"schedule\": \"Cada 12 horas\",\n  \"petId\": {{petId}},\n  \"startDate\": \"2026-10-01\",\n  \"endDate\": \"2026-10-10\",\n  \"status\": \"active\"\n}", "options": { "raw": { "language": "json" } } }, "url": { "raw": "{{baseUrl}}/pet-medications", "host": ["{{baseUrl}}"], "path": ["pet-medications"] }, "description": "Requiere CREATE_PET_MEDICATION y un medicationCatalogId existente. appointmentId es opcional." }, "response": [] },
+        { "name": "Listar tratamientos con filtros", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/pet-medications?petId={{petId}}&status=active&from=2026-01-01&to=2026-12-31", "host": ["{{baseUrl}}"], "path": ["pet-medications"], "query": [{ "key": "petId", "value": "{{petId}}" }, { "key": "status", "value": "active" }, { "key": "from", "value": "2026-01-01" }, { "key": "to", "value": "2026-12-31" }] }, "description": "Requiere READ_PET_MEDICATION. Filtros opcionales: petId, appointmentId, status, from, to." }, "response": [] },
+        { "name": "Listar tratamientos de mascota (ruta corta)", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/pet-medications/pet/{{petId}}", "host": ["{{baseUrl}}"], "path": ["pet-medications", "pet", "{{petId}}"] }, "description": "Requiere READ_PET_MEDICATION." }, "response": [] },
+        { "name": "Obtener tratamiento de mascota", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/pet-medications/{{medicationId}}", "host": ["{{baseUrl}}"], "path": ["pet-medications", "{{medicationId}}"] }, "description": "Requiere READ_PET_MEDICATION." }, "response": [] },
+        { "name": "Actualizar tratamiento de mascota", "request": { "method": "PATCH", "body": { "mode": "raw", "raw": "{\n  \"status\": \"completed\"\n}", "options": { "raw": { "language": "json" } } }, "url": { "raw": "{{baseUrl}}/pet-medications/{{medicationId}}", "host": ["{{baseUrl}}"], "path": ["pet-medications", "{{medicationId}}"] }, "description": "Requiere UPDATE_PET_MEDICATION." }, "response": [] },
+        { "name": "Eliminar tratamiento de mascota", "request": { "method": "DELETE", "url": { "raw": "{{baseUrl}}/pet-medications/{{medicationId}}", "host": ["{{baseUrl}}"], "path": ["pet-medications", "{{medicationId}}"] }, "description": "Requiere DELETE_PET_MEDICATION." }, "response": [] }
+      ]
+    },
+    {
+      "name": "Registros de peso",
+      "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+      "item": [
+        { "name": "Registrar peso", "request": { "method": "POST", "body": { "mode": "raw", "raw": "{\n  \"weightKg\": 12.5,\n  \"petId\": {{petId}},\n  \"measurementDate\": \"2026-10-11\"\n}", "options": { "raw": { "language": "json" } } }, "url": { "raw": "{{baseUrl}}/weight-records", "host": ["{{baseUrl}}"], "path": ["weight-records"] }, "description": "Requiere CREATE_WEIGHT_RECORD. appointmentId es opcional." }, "response": [] },
+        { "name": "Listar registros de peso con filtros", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/weight-records?petId={{petId}}&from=2026-01-01&to=2026-12-31", "host": ["{{baseUrl}}"], "path": ["weight-records"], "query": [{ "key": "petId", "value": "{{petId}}" }, { "key": "from", "value": "2026-01-01" }, { "key": "to", "value": "2026-12-31" }] }, "description": "Requiere READ_WEIGHT_RECORD. Filtros opcionales: petId, appointmentId, from, to." }, "response": [] },
+        { "name": "Listar pesos de mascota (ruta corta)", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/weight-records/pet/{{petId}}", "host": ["{{baseUrl}}"], "path": ["weight-records", "pet", "{{petId}}"] }, "description": "Requiere READ_WEIGHT_RECORD." }, "response": [] },
+        { "name": "Obtener registro de peso", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/weight-records/{{weightRecordId}}", "host": ["{{baseUrl}}"], "path": ["weight-records", "{{weightRecordId}}"] }, "description": "Requiere READ_WEIGHT_RECORD." }, "response": [] }
+      ]
+    },
+    {
+      "name": "Recordatorios",
+      "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+      "item": [
+        { "name": "Crear recordatorio", "request": { "method": "POST", "body": { "mode": "raw", "raw": "{\n  \"title\": \"Próxima vacuna\",\n  \"description\": \"Aplicar refuerzo anual\",\n  \"remindAt\": \"2027-10-01T09:00:00.000Z\",\n  \"type\": \"vaccine\",\n  \"petId\": {{petId}},\n  \"createdByUserId\": {{userId}}\n}", "options": { "raw": { "language": "json" } } }, "url": { "raw": "{{baseUrl}}/reminders", "host": ["{{baseUrl}}"], "path": ["reminders"] }, "description": "Requiere CREATE_REMINDER." }, "response": [] },
+        { "name": "Listar recordatorios con filtros", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/reminders?petId={{petId}}&completed=false&type=vaccine", "host": ["{{baseUrl}}"], "path": ["reminders"], "query": [{ "key": "petId", "value": "{{petId}}" }, { "key": "completed", "value": "false" }, { "key": "type", "value": "vaccine" }] }, "description": "Requiere READ_REMINDER. Filtros opcionales: petId, createdByUserId, completed, type, from, to." }, "response": [] },
+        { "name": "Obtener recordatorio", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/reminders/{{reminderId}}", "host": ["{{baseUrl}}"], "path": ["reminders", "{{reminderId}}"] }, "description": "Requiere READ_REMINDER." }, "response": [] },
+        { "name": "Actualizar recordatorio", "request": { "method": "PATCH", "body": { "mode": "raw", "raw": "{\n  \"completed\": true\n}", "options": { "raw": { "language": "json" } } }, "url": { "raw": "{{baseUrl}}/reminders/{{reminderId}}", "host": ["{{baseUrl}}"], "path": ["reminders", "{{reminderId}}"] }, "description": "Requiere UPDATE_REMINDER." }, "response": [] },
+        { "name": "Eliminar recordatorio", "request": { "method": "DELETE", "url": { "raw": "{{baseUrl}}/reminders/{{reminderId}}", "host": ["{{baseUrl}}"], "path": ["reminders", "{{reminderId}}"] }, "description": "Requiere DELETE_REMINDER." }, "response": [] }
+      ]
+    },
+    {
+      "name": "Archivos estáticos",
+      "item": [
+        {
+          "name": "Obtener imagen",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/uploads/{{filename}}", "host": ["{{baseUrl}}"], "path": ["uploads", "{{filename}}"] },
+            "description": "Recurso estático público. Usa el filename guardado en photos.filename."
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
