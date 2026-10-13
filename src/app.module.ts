@@ -11,6 +11,7 @@ import { MedicationsModule } from './medication-catalog/medications.module';
 import { PetMedicationsModule } from './pets-medication/medications.module';
 import { WeightRecordsModule } from './weight-records/weight-records.module';
 import { RemindersModule } from './reminders/reminders.module';
+import { PhotosModule } from './photos/photos.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { RemindersModule } from './reminders/reminders.module';
     PetMedicationsModule,
     WeightRecordsModule,
     RemindersModule,
+    PhotosModule,
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath:
