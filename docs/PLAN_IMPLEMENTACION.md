@@ -17,8 +17,7 @@
 4. **Medicamentos**: CRUD con estado, fechas de inicio/fin y relaciones opcionales a cita y veterinario.
 5. **Pesos**: registrar y consultar mediciones por mascota, opcionalmente asociadas a una cita.
 6. **Recordatorios**: CRUD y actualización de `completed`; relacionar la mascota y el usuario creador.
-
-Las fotos ya se reciben desde el controlador de mascotas y se guardan en `uploads/`; no crear un módulo de fotos separado mientras ese flujo sea suficiente.
+7. **Fotos**: gestionar carga, consulta, metadatos y eliminación de fotos asociadas a mascotas, reutilizando la entidad y el almacenamiento existentes.
 
 ## Pasos por recurso
 
@@ -43,4 +42,5 @@ Las fotos ya se reciben desde el controlador de mascotas y se guardan en `upload
 - El controlador aplica los permisos adecuados y no expone passwords ni otros datos sensibles.
 - El servicio no construye respuestas HTTP.
 - Swagger refleja multipart cuando haya archivos y el envelope estándar en respuestas exitosas.
+- Fotos conserva la validación de imágenes y el almacenamiento estático en `uploads/`; borrar una foto elimina también su archivo.
 - Los diagnósticos y pruebas del módulo pasan; verificar además que la app compile.

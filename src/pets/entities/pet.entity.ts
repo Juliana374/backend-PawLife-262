@@ -1,50 +1,65 @@
-// Import TypeORM tools.
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
-
-// Import the User entity.
+import {
+	Check,
+	Column,
+	Entity,
+	Index,
+	JoinColumn,
+	ManyToOne,
+	OneToMany,
+	PrimaryGeneratedColumn,
+	UpdateDateColumn,
+} from 'typeorm';
 import { User } from '../../users/entities/user.entity';
+import { Photo } from './photo.entity';
 
-// Allowed pet species.
-export enum PetSpecies { DOG = 'dog', CAT = 'cat' }
+export enum PetSpecies {
+	DOG = 'dog',
+	CAT = 'cat',
+	BIRD = 'bird',
+	RABBIT = 'rabbit',
+	OTHER = 'other',
+}
 
-// Allowed pet sexes.
-export enum PetSex { MALE = 'male', FEMALE = 'female' }
+export enum PetSex {
+	MALE = 'male',
+	FEMALE = 'female',
+}
 
-// Create the "pets" table.
+@Index('idx_pets_owner_id', ['owner'])
+@Check('"birth_date" IS NULL OR "birth_date" <= CURRENT_DATE')
 @Entity('pets')
 export class Pet {
+	@PrimaryGeneratedColumn()
+	id: number;
 
-// Auto-generated primary key.
- @PrimaryGeneratedColumn()
- id: number;
+	@Column({ type: 'varchar', length: 80 })
+	name: string;
 
- @Column({ type: 'varchar', length: 80 }) // Pet's name.
- name: string;
+	@Column({ type: 'enum', enum: PetSpecies, enumName: 'pets_species_enum' })
+	species: PetSpecies;
 
- @Column({ type: 'enum', enum: PetSpecies }) // Pet's species: dog or cat.
- species: PetSpecies;
+	@Column({ type: 'varchar', length: 80, nullable: true })
+	breed: string | null;
 
- @Column({ type: 'varchar', length: 80, nullable: true }) // Pet's breed. Can be empty.
- breed: string;
+	@Column({ type: 'enum', enum: PetSex, enumName: 'pets_sex_enum', nullable: true })
+	sex: PetSex | null;
 
+	@Column({ name: 'birth_date', type: 'date', nullable: true })
+	birthDate: Date | null;
 
- @Column({ type: 'enum', enum: PetSex, nullable: true }) // Pet's sex. Can be empty.
- sex: PetSex;
+	@Column({ type: 'boolean', default: true })
+	active: boolean;
 
- @Column({ name: 'birth_date', type: 'date', nullable: true }) // Pet's birth date. Can be empty.
- birthDate: Date;
+	@ManyToOne(() => User, { nullable: false, onDelete: 'CASCADE' })
+	@JoinColumn({ name: 'owner_id' })
+	owner: User;
 
- @Column({ type: 'boolean', default: true }) // Pet is active by default.
- active: boolean;
+	@OneToMany(() => Photo, (photo) => photo.pet)
+	photos: Photo[];
 
+	@Column({ name: 'created_at', type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
+	createdAt: Date;
 
-// Connect the pet with its owner.
- @ManyToOne(() => User, { nullable: false })
- @JoinColumn({ name: 'owner_id' })
- owner: User;
- 
-// Connect the pet with its vet.
- @ManyToOne(() => User, { nullable: false })
- @JoinColumn({ name: 'vet_id' })
- vet: User;
+	@UpdateDateColumn({ name: 'updated_at', type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
+	updatedAt: Date;
 }
