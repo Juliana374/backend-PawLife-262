@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "557e79b8-8ef0-4cc2-8c4c-8e093202a78d",
     "name": "Pawlife API",
-    "description": "Endpoints de autenticación, usuarios, mascotas, veterinarios, citas, vacunas, medicamentos, pesos, recordatorios y archivos estáticos. Importa Pawlife Local para desarrollo o Pawlife Production para el dominio desplegado. El esquema y los permisos de base de datos son administrados en la nube.",
+    "description": "Endpoints de autenticación, usuarios, mascotas, fotos, veterinarios, citas, vacunas, medicamentos, pesos, recordatorios y archivos estáticos. Importa Pawlife Local para desarrollo o Pawlife Production para el dominio desplegado. El esquema y los permisos de base de datos son administrados en la nube.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -15,6 +15,7 @@
     { "key": "ownerId", "value": "1" },
     { "key": "veterinarianUserId", "value": "1" },
     { "key": "petId", "value": "1" },
+    { "key": "photoId", "value": "1" },
     { "key": "appointmentId", "value": "1" },
     { "key": "vaccineId", "value": "1" },
     { "key": "medicationId", "value": "1" },
@@ -195,6 +196,82 @@
             "method": "DELETE",
             "url": { "raw": "{{baseUrl}}/pets/{{petId}}", "host": ["{{baseUrl}}"], "path": ["pets", "{{petId}}"] },
             "description": "Requiere DELETE_PET. Responde 200 con data: null."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Fotos",
+      "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+      "item": [
+        {
+          "name": "Subir foto de mascota",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const response = pm.response.json();",
+                  "if (response.data && response.data.id) {",
+                  "  pm.collectionVariables.set('photoId', response.data.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "petId", "value": "{{petId}}", "type": "text" },
+                { "key": "description", "value": "Control dermatológico", "type": "text" },
+                { "key": "takenAt", "value": "2026-10-12T10:00:00.000Z", "type": "text" },
+                { "key": "photo", "type": "file", "src": "" }
+              ]
+            },
+            "url": { "raw": "{{baseUrl}}/photos", "host": ["{{baseUrl}}"], "path": ["photos"] },
+            "description": "Requiere CREATE_PHOTO. Admite JPEG, PNG, WebP o GIF de hasta 5 MB. Devuelve la URL pública y guarda data.id en photoId."
+          },
+          "response": []
+        },
+        {
+          "name": "Listar fotos",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/photos?petId={{petId}}", "host": ["{{baseUrl}}"], "path": ["photos"], "query": [{ "key": "petId", "value": "{{petId}}" }] },
+            "description": "Requiere READ_PHOTO. petId es opcional; sin filtro lista todas las fotos."
+          },
+          "response": []
+        },
+        {
+          "name": "Obtener foto",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/photos/{{photoId}}", "host": ["{{baseUrl}}"], "path": ["photos", "{{photoId}}"] },
+            "description": "Requiere READ_PHOTO."
+          },
+          "response": []
+        },
+        {
+          "name": "Actualizar metadatos de foto",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"description\": \"Seguimiento clínico\",\n  \"takenAt\": \"2026-10-12T11:30:00.000Z\"\n}", "options": { "raw": { "language": "json" } } },
+            "url": { "raw": "{{baseUrl}}/photos/{{photoId}}", "host": ["{{baseUrl}}"], "path": ["photos", "{{photoId}}"] },
+            "description": "Requiere UPDATE_PHOTO. Envía description y/o takenAt."
+          },
+          "response": []
+        },
+        {
+          "name": "Eliminar foto",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{baseUrl}}/photos/{{photoId}}", "host": ["{{baseUrl}}"], "path": ["photos", "{{photoId}}"] },
+            "description": "Requiere DELETE_PHOTO. Elimina el registro y el archivo; responde 200 con data: null."
           },
           "response": []
         }
